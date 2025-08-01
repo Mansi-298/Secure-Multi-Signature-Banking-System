@@ -14,11 +14,11 @@ router.post('/register', async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
-    // Check if user exists
+    // Check if user already exists
     const existingUser = await User.findOne({ 
       $or: [{ email }, { username }] 
     });
-    
+
     if (existingUser) {
       return res.status(400).json({ 
         error: 'User already exists' 
@@ -27,19 +27,22 @@ router.post('/register', async (req, res) => {
 
     // Generate TOTP secret
     const totpSecret = cryptoService.generateTOTPSecret();
-    
+
     // Generate key pair for digital signatures
     const keyPair = cryptoService.generateKeyPair();
     const encryptedPrivateKey = cryptoService.encryptPrivateKey(
-      keyPair.privateKey, 
+      keyPair.privateKey,
       password
     );
+
+    // 🔐 Hash the password here
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create new user
     const user = new User({
       username,
       email,
-      passwordHash: password, // Will be hashed by pre-save middleware
+      passwordHash: hashedPassword,
       totpSecret: totpSecret.base32,
       publicKey: keyPair.publicKey,
       privateKeyEncrypted: JSON.stringify(encryptedPrivateKey)
@@ -58,12 +61,14 @@ router.post('/register', async (req, res) => {
     });
 
   } catch (error) {
+    console.error('❌ Registration failed:', error);
     res.status(500).json({ 
       error: 'Registration failed', 
       details: error.message 
     });
   }
 });
+
 
 // Login with TOTP
 router.post('/login', async (req, res) => {

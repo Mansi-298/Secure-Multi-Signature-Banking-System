@@ -49,7 +49,7 @@ class CryptoService {
     const key = crypto.pbkdf2Sync(password, salt, 100000, 32, 'sha256'); // Increased iterations
     const iv = crypto.randomBytes(16);
     
-    const cipher = crypto.createCipherGCM('aes-256-gcm', key);
+    const cipher = crypto.createCipherGCM('aes-256-gcm', key, iv);
     cipher.setAAD(Buffer.from('rsa-private-key-encryption'));
     
     let encrypted = cipher.update(privateKey, 'utf8', 'hex');
@@ -71,7 +71,7 @@ class CryptoService {
       const { encrypted, salt, iv, authTag } = encryptedData;
       const key = crypto.pbkdf2Sync(password, Buffer.from(salt, 'hex'), 100000, 32, 'sha256');
       
-      const decipher = crypto.createDecipherGCM('aes-256-gcm', key);
+      const decipher = crypto.createDecipherGCM('aes-256-gcm', key, Buffer.from(iv, 'hex'));
       decipher.setAuthTag(Buffer.from(authTag, 'hex'));
       decipher.setAAD(Buffer.from('rsa-private-key-encryption'));
       

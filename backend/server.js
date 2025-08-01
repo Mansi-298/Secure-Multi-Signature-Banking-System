@@ -23,6 +23,11 @@ const transactionRoutes = require('./routes/transactions');
 const messagingRoutes = require('./routes/messaging');
 const auditRoutes = require('./routes/audit');
 
+// Test endpoint
+app.get('/api/test', (req, res) => {
+  res.json({ message: 'Backend server is running!' });
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/messaging', messagingRoutes);
@@ -40,7 +45,7 @@ mongoose.connect(process.env.MONGO_URL || 'mongodb://localhost:27017/secure_bank
     console.log('✅ MongoDB connected successfully');
     
     // Start server only after DB connects
-    app.listen(PORT, '0.0.0.0', () => {
+    app.listen(5000, '0.0.0.0', () => {
       console.log(`🚀 Server running on port ${PORT}`);
     });
   })
@@ -49,7 +54,7 @@ mongoose.connect(process.env.MONGO_URL || 'mongodb://localhost:27017/secure_bank
     console.log('⚠️  Starting server without database connection...');
     
     // Start server even if DB fails (for development)
-    app.listen(PORT, '0.0.0.0', () => {
+    app.listen(5000, '0.0.0.0', () => {
       console.log(`🚀 Server running on port ${PORT}`);
     });
     
