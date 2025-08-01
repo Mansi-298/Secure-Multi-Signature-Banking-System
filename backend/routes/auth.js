@@ -12,7 +12,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key';
 // Register new user
 router.post('/register', async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { username, email, password, role } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ 
@@ -47,7 +47,8 @@ console.log("TOTP otpauth_url:", totpSecret.otpauth_url);
       passwordHash: hashedPassword,
       totpSecret: totpSecret.base32,
       publicKey: keyPair.publicKey,
-      privateKeyEncrypted: JSON.stringify(encryptedPrivateKey)
+      privateKeyEncrypted: JSON.stringify(encryptedPrivateKey),
+      role: role || 'initiator'
     });
 
     await user.save();

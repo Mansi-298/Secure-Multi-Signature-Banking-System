@@ -7,7 +7,8 @@ function RegisterForm({ setCurrentView }) {
     username: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    role: 'initiator'
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -37,7 +38,8 @@ function RegisterForm({ setCurrentView }) {
       const response = await axios.post('/auth/register', {
         username: formData.username,
         email: formData.email,
-        password: formData.password
+        password: formData.password,
+        role: formData.role
       });
 
       setQrCode(response.data.totpQR);
@@ -111,6 +113,19 @@ function RegisterForm({ setCurrentView }) {
               onChange={handleChange}
               required
             />
+          </div>
+          
+          <div className="form-group">
+            <label>Role:</label>
+            <select
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              required
+            >
+              <option value="initiator">Initiator - Can create transactions</option>
+              <option value="approval">Approval - Can approve transactions</option>
+            </select>
           </div>
           
           <div className="form-group">

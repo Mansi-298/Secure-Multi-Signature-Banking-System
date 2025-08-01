@@ -28,10 +28,10 @@ const userSchema = new mongoose.Schema({
   // Multi-sig keys for threshold signatures
   publicKey: String,
   privateKeyEncrypted: String, // Encrypted with user password
-  role: { 
-    type: String, 
-    enum: ['user', 'approver', 'admin'], 
-    default: 'user' 
+  role: {
+    type: String,
+    default: 'initiator',
+    enum: ['initiator', 'approval']
   },
   // For preventing replay attacks
   nonce: { 
@@ -40,13 +40,6 @@ const userSchema = new mongoose.Schema({
   }
 }, {
   timestamps: true
-});
-
-// Hash password before saving
-userSchema.pre('save', async function(next) {
-  if (!this.isModified('passwordHash')) return next();
-  this.passwordHash = await bcrypt.hash(this.passwordHash, 12);
-  next();
 });
 
 module.exports = mongoose.model('User', userSchema);

@@ -58,7 +58,77 @@ router.post('/create', authenticateToken, async (req, res) => {
   }
 });
 
-// Sign transaction (for approvers)
+// Approve/Sign transaction (for approvers)
+router.post('/approve/:transactionId', authenticateToken, async (req, res) => {
+  try {
+    const { transactionId } = req.params;
+    const signerId = req.user.userId;
+
+    // Find transaction
+    const transaction = await Transaction.findOne({ transactionId })
+      .populate('signatures.signer', 'username publicKey');
+    
+    if (!transaction) {
+      return res.status(404).json({ error: 'Transaction not found' });
+    }
+
+    if (transaction.status !== 'pending') {
+      return res.status(400).json({ error: 'Transaction is not pending' });
+    }
+
+    // Check if user already signed
+    const existingSignature = transaction.signatures.find(
+      sig => sig.signer._id.toString() === signerId
+    );
+
+    if (existingSignature) {
+      return res.status(400).json({ error: 'Already signed this transaction' });
+    }
+
+    // Get signer details
+    const signer = await User.findById(signerId);
+    if (!signer) {
+      return res.status(404).json({ error: 'Signer not found' });
+    }
+
+    // Create a simple signature (in production, use proper cryptographic signing)
+    const signature = `sig_${Date.now()}_${signerId}`;
+
+    // Add signature to transaction
+    transaction.signatures.push({
+      signer: signerId,
+      signature,
+      nonce: signer.nonce + 1
+    });
+
+    // Update signer nonce
+    signer.nonce += 1;
+    await signer.save();
+
+    // Check if threshold is met
+    if (transaction.signatures.length >= transaction.requiredSignatures) {
+      transaction.status = 'approved';
+    }
+
+    await transaction.save();
+    await logAction({ user: req.user, action: 'TX_APPROVE', targetId: transaction.transactionId });
+
+    res.json({
+      message: 'Transaction signed successfully',
+      signaturesCount: transaction.signatures.length,
+      requiredSignatures: transaction.requiredSignatures,
+      status: transaction.status
+    });
+
+  } catch (error) {
+    res.status(500).json({ 
+      error: 'Signing failed', 
+      details: error.message 
+    });
+  }
+});
+
+// Sign transaction (for approvers) - Legacy endpoint
 router.post('/sign/:transactionId', authenticateToken, async (req, res) => {
   try {
     const { transactionId } = req.params;
@@ -216,6 +286,74 @@ router.get('/pending/list', authenticateToken, async (req, res) => {
   } catch (error) {
     res.status(500).json({ 
       error: 'Failed to get pending transactions', 
+      details: error.message 
+    });
+  }
+});
+
+// Get transactions for approval (for approval role users)
+router.get('/approvals/list', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    
+    // Get pending transactions that user hasn't signed yet
+    const transactions = await Transaction.find({ 
+      status: 'pending',
+      'signatures.signer': { $ne: userId } // Exclude already signed by current user
+    })
+      .populate('initiator', 'username email')
+      .populate('signatures.signer', 'username')
+      .sort({ createdAt: -1 });
+
+    const transactionsWithSignedBy = transactions.map(tx => ({
+      _id: tx._id,
+      transactionId: tx.transactionId,
+      amount: tx.amount,
+      recipient: tx.recipient,
+      description: tx.description,
+      initiator: tx.initiator,
+      signaturesCount: tx.signatures.length,
+      requiredSignatures: tx.requiredSignatures,
+      createdAt: tx.createdAt,
+      signedBy: tx.signatures.map(sig => sig.signer._id.toString())
+    }));
+
+    res.json(transactionsWithSignedBy);
+
+  } catch (error) {
+    res.status(500).json({ 
+      error: 'Failed to get approval transactions', 
+      details: error.message 
+    });
+  }
+});
+
+// Get approved transactions ready for execution
+router.get('/approved/list', authenticateToken, async (req, res) => {
+  try {
+    const transactions = await Transaction.find({ 
+      status: 'approved',
+      executedAt: { $exists: false }
+    })
+      .populate('initiator', 'username email')
+      .populate('signatures.signer', 'username')
+      .sort({ createdAt: -1 });
+
+    res.json(transactions.map(tx => ({
+      _id: tx._id,
+      transactionId: tx.transactionId,
+      amount: tx.amount,
+      recipient: tx.recipient,
+      description: tx.description,
+      initiator: tx.initiator,
+      signaturesCount: tx.signatures.length,
+      requiredSignatures: tx.requiredSignatures,
+      createdAt: tx.createdAt
+    })));
+
+  } catch (error) {
+    res.status(500).json({ 
+      error: 'Failed to get approved transactions', 
       details: error.message 
     });
   }
