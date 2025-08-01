@@ -19,6 +19,7 @@ const messageSchema = new mongoose.Schema({
   // Encryption metadata
   iv: String, // Initialization vector
   authTag: String, // Authentication tag for AES-GCM
+  encryptedKey: String, // RSA-encrypted AES key for hybrid encryption
   
   // Message integrity and authenticity
   signature: String, // Digital signature of sender

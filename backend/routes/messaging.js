@@ -13,6 +13,10 @@ router.post('/send', authenticateToken, async (req, res) => {
     const { recipientId, content } = req.body;
     const senderId = req.user.userId;
 
+    if (!recipientId || !content) {
+      return res.status(400).json({ error: 'Recipient ID and content are required' });
+    }
+
     // Get recipient's public key
     const recipient = await User.findById(recipientId);
     if (!recipient) {
@@ -59,9 +63,11 @@ router.post('/send', authenticateToken, async (req, res) => {
     });
 
   } catch (error) {
+    console.error('❌ Failed to send message:', error);
     res.status(500).json({ 
       error: 'Failed to send message', 
-      details: error.message 
+      details: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 });

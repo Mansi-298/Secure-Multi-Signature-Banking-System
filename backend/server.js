@@ -28,10 +28,11 @@ app.get('/api/test', (req, res) => {
   res.json({ message: 'Backend server is running!' });
 });
 
+// Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/transactions', transactionRoutes);
-app.use('/api/messaging', messagingRoutes);
+app.use('/api/transactions', require('./routes/transactions'));
 app.use('/api/audit', auditRoutes);
+app.use('/api/messaging', messagingRoutes);
 
 app.get('/', (req, res) => {
   res.send('✅ Backend is alive');
@@ -40,22 +41,10 @@ app.get('/', (req, res) => {
 
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGO_URL || 'mongodb://localhost:27017/secure_banking')
-  .then(() => {
-    console.log('✅ MongoDB connected successfully');
-    
-    // Start server only after DB connects
-    app.listen(5000, '0.0.0.0', () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-    });
-  })
-  .catch((err) => {
+const mongoUrl = process.env.MONGO_URL || 'mongodb://0.0.0.0:27017/secure_banking';
+mongoose.connect(mongoUrl)
+  .then(() => console.log('✅ Connected to MongoDB at:', mongoUrl))
+  .catch(err => {
     console.error('❌ MongoDB connection error:', err);
-    console.log('⚠️  Starting server without database connection...');
-    
-    // Start server even if DB fails (for development)
-    app.listen(5000, '0.0.0.0', () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-    });
-    
+    console.log('💡 Make sure MongoDB is running: mongod --dbpath=./data/db --bind_ip=0.0.0.0 --port=27017');
   });

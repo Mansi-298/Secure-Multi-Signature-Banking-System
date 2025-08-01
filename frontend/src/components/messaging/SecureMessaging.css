@@ -1,15 +1,17 @@
+
 /* ===== SECURE MESSAGING STYLES ===== */
 
 .messaging-container {
   max-width: 1200px;
   margin: 0 auto;
+  padding: var(--spacing-6);
 }
 
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--spacing-8);
+  margin-bottom: var(--spacing-6);
   padding-bottom: var(--spacing-4);
   border-bottom: 2px solid var(--gray-200);
 }
@@ -46,14 +48,43 @@
   box-shadow: var(--shadow-md);
 }
 
+.encryption-notice {
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+  border: 1px solid var(--info);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-4);
+  margin-bottom: var(--spacing-6);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.encryption-notice .icon {
+  color: var(--info);
+  font-size: var(--font-size-xl);
+}
+
+.encryption-notice strong {
+  display: block;
+  color: var(--gray-800);
+  margin-bottom: var(--spacing-1);
+}
+
+.encryption-notice p {
+  color: var(--gray-600);
+  font-size: var(--font-size-sm);
+  margin: 0;
+}
+
 .messaging-layout {
   display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: var(--spacing-8);
-  height: calc(100vh - 300px);
+  grid-template-columns: 300px 1fr;
+  gap: var(--spacing-6);
+  height: 600px;
   min-height: 600px;
 }
 
+/* ===== CONTACTS PANEL ===== */
 .contacts-panel {
   background: var(--white);
   border-radius: var(--radius-2xl);
@@ -65,37 +96,49 @@
 }
 
 .contacts-header {
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-  color: var(--white);
-  padding: var(--spacing-4) var(--spacing-6);
-  font-weight: 600;
+  background: var(--gray-50);
+  border-bottom: 1px solid var(--gray-200);
+  padding: var(--spacing-4) var(--spacing-5);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.contacts-header h3 {
   font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--gray-900);
+}
+
+.contact-count {
+  font-size: var(--font-size-sm);
+  color: var(--gray-500);
+  background: var(--gray-200);
+  padding: var(--spacing-1) var(--spacing-2);
+  border-radius: var(--radius-md);
 }
 
 .contacts-list {
   flex: 1;
   overflow-y: auto;
-  padding: var(--spacing-4);
 }
 
 .contact-item {
   display: flex;
   align-items: center;
   gap: var(--spacing-3);
-  padding: var(--spacing-3) var(--spacing-4);
-  border-radius: var(--radius-lg);
+  padding: var(--spacing-4) var(--spacing-5);
   cursor: pointer;
   transition: all var(--transition-fast);
-  margin-bottom: var(--spacing-2);
+  border-bottom: 1px solid var(--gray-100);
 }
 
 .contact-item:hover {
-  background: var(--gray-100);
-  transform: translateX(4px);
+  background: var(--gray-50);
 }
 
-.contact-item.active {
-  background: var(--primary-color);
+.contact-item.selected {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
   color: var(--white);
 }
 
@@ -103,7 +146,7 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -112,25 +155,39 @@
   font-size: var(--font-size-sm);
 }
 
-.contact-info {
-  flex: 1;
+.contact-item.selected .contact-avatar {
+  background: rgba(255, 255, 255, 0.2);
 }
 
-.contact-name {
+.contact-info h4 {
+  font-size: var(--font-size-base);
   font-weight: 600;
-  font-size: var(--font-size-sm);
   margin-bottom: var(--spacing-1);
 }
 
-.contact-email {
-  font-size: var(--font-size-xs);
+.contact-info p {
+  font-size: var(--font-size-sm);
   color: var(--gray-500);
+  margin-bottom: var(--spacing-1);
 }
 
-.contact-item.active .contact-email {
+.contact-item.selected .contact-info p,
+.contact-item.selected .contact-info small {
   color: rgba(255, 255, 255, 0.8);
 }
 
+.contact-info small {
+  font-size: var(--font-size-xs);
+  color: var(--gray-400);
+}
+
+.no-contacts {
+  padding: var(--spacing-8);
+  text-align: center;
+  color: var(--gray-500);
+}
+
+/* ===== CHAT PANEL ===== */
 .chat-panel {
   background: var(--white);
   border-radius: var(--radius-2xl);
@@ -151,8 +208,8 @@
 }
 
 .chat-avatar {
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
   display: flex;
@@ -160,11 +217,11 @@
   justify-content: center;
   font-weight: 600;
   color: var(--white);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-lg);
 }
 
 .chat-info h3 {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-xl);
   font-weight: 600;
   color: var(--gray-900);
   margin-bottom: var(--spacing-1);
@@ -180,6 +237,22 @@
   overflow-y: auto;
   padding: var(--spacing-6);
   background: var(--gray-50);
+}
+
+.no-messages {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--gray-500);
+  text-align: center;
+}
+
+.no-messages .icon {
+  font-size: var(--font-size-4xl);
+  margin-bottom: var(--spacing-4);
+  opacity: 0.5;
 }
 
 .message {
@@ -251,6 +324,7 @@
   min-height: 44px;
   max-height: 120px;
   transition: all var(--transition-fast);
+  font-family: inherit;
 }
 
 .message-input:focus {
@@ -263,9 +337,9 @@
   background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
   color: var(--white);
   border: none;
-  padding: var(--spacing-3) var(--spacing-4);
+  padding: var(--spacing-3) var(--spacing-5);
   border-radius: var(--radius-lg);
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-sm);
   font-weight: 600;
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -285,6 +359,7 @@
 
 .no-chat-selected {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100%;
@@ -298,24 +373,6 @@
   font-size: var(--font-size-4xl);
   margin-bottom: var(--spacing-4);
   opacity: 0.5;
-}
-
-.encryption-notice {
-  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
-  border: 1px solid var(--info);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-3) var(--spacing-4);
-  margin-bottom: var(--spacing-4);
-  font-size: var(--font-size-sm);
-  color: var(--gray-700);
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-2);
-}
-
-.encryption-notice .icon {
-  color: var(--info);
-  font-size: var(--font-size-lg);
 }
 
 /* ===== RESPONSIVE DESIGN ===== */
@@ -343,4 +400,4 @@
   .message-bubble {
     max-width: 85%;
   }
-} 
+}
