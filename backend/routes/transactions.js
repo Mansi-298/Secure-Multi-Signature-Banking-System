@@ -2,6 +2,7 @@ const express = require('express');
 const Transaction = require('../models/Transaction');
 const User = require('../models/User');
 const cryptoService = require('../services/cryptoService');
+const { logAction } = require('../services/logService');
 const { authenticateToken } = require('./auth');
 
 const router = express.Router();
@@ -34,6 +35,8 @@ router.post('/create', authenticateToken, async (req, res) => {
     });
 
     await transaction.save();
+    await logAction({ user: req.user, action: 'TX_CREATE', targetId: transaction.transactionId });
+
 
     res.status(201).json({
       message: 'Transaction created successfully',
@@ -217,5 +220,47 @@ router.get('/pending/list', authenticateToken, async (req, res) => {
     });
   }
 });
+
+// Execute approved transaction (only by admin or initiator)
+router.post('/execute/:transactionId', authenticateToken, async (req, res) => {
+  try {
+    const { transactionId } = req.params;
+    const userId = req.user.userId;
+
+    const transaction = await Transaction.findOne({ transactionId })
+      .populate('initiator', 'username');
+
+    if (!transaction)
+      return res.status(404).json({ error: 'Transaction not found' });
+
+    if (transaction.status !== 'approved')
+      return res.status(400).json({ error: 'Transaction is not approved yet' });
+
+    if (transaction.executedAt)
+      return res.status(400).json({ error: 'Transaction already executed' });
+
+    // Only admin or initiator can execute
+    if (req.user.role !== 'admin' && transaction.initiator._id.toString() !== userId)
+      return res.status(403).json({ error: 'Not authorized to execute this transaction' });
+
+    transaction.status = 'executed';
+    transaction.executedAt = new Date();
+    transaction.executedBy = userId;
+
+    await transaction.save();
+    await logAction({ user: req.user, action: 'TX_EXECUTE', targetId: transaction.transactionId });
+
+
+    res.json({
+      message: 'Transaction executed successfully',
+      transactionId: transaction.transactionId,
+      executedAt: transaction.executedAt
+    });
+
+  } catch (error) {
+    res.status(500).json({ error: 'Execution failed', details: error.message });
+  }
+});
+
 
 module.exports = router;

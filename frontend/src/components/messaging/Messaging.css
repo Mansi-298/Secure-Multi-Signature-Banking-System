@@ -1,0 +1,30 @@
+.messaging-container {
+  padding: 1rem;
+}
+
+.messaging-grid {
+  display: flex;
+  gap: 2rem;
+}
+
+.send-message, .inbox {
+  flex: 1;
+  border: 1px solid #ccc;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.msg-card {
+  border-bottom: 1px solid #eee;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+}
+
+.msg-card.unread {
+  background-color: #f9f9f9;
+  font-weight: bold;
+}
+
+.msg-card.read {
+  color: #555;
+}

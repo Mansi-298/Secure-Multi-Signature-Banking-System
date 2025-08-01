@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const QRCode = require('qrcode');
 const User = require('../models/User');
 const cryptoService = require('../services/cryptoService');
+const { logAction } = require('../services/logService');
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key';
@@ -107,6 +108,8 @@ router.post('/login', async (req, res) => {
       JWT_SECRET,
       { expiresIn: '1h' }
     );
+
+    await logAction({ user, action: 'LOGIN', status: 'success' });
 
     res.json({
       message: 'Login successful',

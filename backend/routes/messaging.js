@@ -2,6 +2,7 @@ const express = require('express');
 const Message = require('../models/Message');
 const User = require('../models/User');
 const cryptoService = require('../services/cryptoService');
+const { logAction } = require('../services/logService');
 const { authenticateToken } = require('./auth');
 
 const router = express.Router();
@@ -49,6 +50,8 @@ router.post('/send', authenticateToken, async (req, res) => {
     });
 
     await message.save();
+    await logAction({ user: req.user, action: 'MSG_SEND', targetId: message._id });
+
 
     res.status(201).json({
       message: 'Message sent successfully',
@@ -125,6 +128,9 @@ router.get('/read/:messageId', authenticateToken, async (req, res) => {
     // Mark as read
     message.isRead = true;
     await message.save();
+
+    await logAction({ user: req.user, action: 'MSG_READ', targetId: message._id });
+
 
     res.json({
       message: {
