@@ -27,6 +27,8 @@ router.post('/register', async (req, res) => {
 
     // Generate TOTP secret
     const totpSecret = cryptoService.generateTOTPSecret();
+    console.log("Generated TOTP Secret (Base32):", totpSecret.base32);
+console.log("TOTP otpauth_url:", totpSecret.otpauth_url);
 
     // Generate key pair for digital signatures
     const keyPair = cryptoService.generateKeyPair();
@@ -74,30 +76,40 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const { username, password, totpToken } = req.body;
+    
+    console.log("Login attempt:", { username, password, totpToken });
 
-    // Find user
-    const user = await User.findOne({ username });
-    if (!user) {
-      return res.status(401).json({ 
-        error: 'Invalid credentials' 
-      });
-    }
+// Find user
+const user = await User.findOne({ username });
+if (!user) {
+  console.log("❌ User not found for username:", username);
+  return res.status(401).json({ error: 'Invalid credentials' });
+}
 
-    // Verify password
-    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-    if (!isPasswordValid) {
-      return res.status(401).json({ 
-        error: 'Invalid credentials' 
-      });
-    }
+// Verify password
+const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+if (!isPasswordValid) {
+  console.log("❌ Password mismatch for user:", username);
+  console.log("Entered:", password);
+  console.log("Stored hash:", user.passwordHash);
+  return res.status(401).json({ error: 'Invalid credentials' });
+}
 
-    // Verify TOTP token
-    const isTotpValid = cryptoService.verifyTOTP(totpToken, user.totpSecret);
-    if (!isTotpValid) {
-      return res.status(401).json({ 
-        error: 'Invalid TOTP token' 
-      });
-    }
+// Verify TOTP token
+const isTotpValid = cryptoService.verifyTOTP(totpToken, user.totpSecret);
+
+console.log("🔐 Verifying TOTP...");
+console.log("  - TOTP Token:", totpToken);
+console.log("  - Stored Secret:", user.totpSecret);
+console.log("  - isTotpValid:", isTotpValid);
+
+if (!isTotpValid) {
+  console.log("❌ Invalid TOTP token for user:", username);
+  console.log("Entered TOTP:", totpToken);
+  console.log("Expected secret:", user.totpSecret);
+  return res.status(401).json({ error: 'Invalid TOTP token' });
+}
+
 
     // Increment user nonce (prevent replay attacks)
     user.nonce += 1;

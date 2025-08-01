@@ -26,13 +26,22 @@ class CryptoService {
   }
 
   verifyTOTP(token, secret) {
-    return speakeasy.totp.verify({
+    const result = speakeasy.totp.verify({
       secret: secret,
       encoding: 'base32',
       token: token,
-      window: 2 // Allow 60 seconds window
+      window: 2 // 60s time drift
     });
+  
+    console.log('🔍 TOTP Verification:', {
+      token,
+      secret,
+      result
+    });
+  
+    return result;
   }
+  
 
   // RSA Key Pair Generation for Digital Signatures
   generateKeyPair() {
@@ -49,7 +58,7 @@ class CryptoService {
     const key = crypto.pbkdf2Sync(password, salt, 100000, 32, 'sha256'); // Increased iterations
     const iv = crypto.randomBytes(16);
     
-    const cipher = crypto.createCipherGCM('aes-256-gcm', key, iv);
+    const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
     cipher.setAAD(Buffer.from('rsa-private-key-encryption'));
     
     let encrypted = cipher.update(privateKey, 'utf8', 'hex');
