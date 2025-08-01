@@ -1,218 +1,100 @@
-
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './SecureMessaging.css';
 
 const SecureMessaging = ({ user, setCurrentView }) => {
   const [message, setMessage] = useState('');
-  const [selectedUser, setSelectedUser] = useState(null);
+  const [recipientId, setRecipientId] = useState('');
   const [users, setUsers] = useState([]);
   const [messages, setMessages] = useState([]);
-  const [conversations, setConversations] = useState([]);
 
   useEffect(() => {
     fetchUsers();
-    fetchConversations();
+    fetchInbox();
   }, []);
-
-  useEffect(() => {
-    if (selectedUser) {
-      fetchMessages(selectedUser._id);
-    }
-  }, [selectedUser]);
 
   const fetchUsers = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await axios.get('/api/auth/users', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await axios.get('/auth/users');
       setUsers(res.data.users.filter(u => u._id !== user._id));
     } catch (err) {
       console.error('Failed to fetch users', err);
     }
   };
 
-  const fetchConversations = async () => {
+  const fetchInbox = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await axios.get('/api/messaging/received', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setConversations(res.data.messages || []);
+      const res = await axios.get('/messaging/received');
+      setMessages(res.data.messages);
     } catch (err) {
-      console.error('Failed to fetch conversations', err);
+      console.error('Failed to fetch inbox', err);
     }
   };
 
-  const fetchMessages = async (recipientId) => {
-    try {
-      const token = localStorage.getItem('token');
-      const res = await axios.get('/api/messaging/received', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const userMessages = res.data.messages.filter(msg => 
-        msg.sender._id === recipientId || msg.recipient === recipientId
-      );
-      setMessages(userMessages);
-    } catch (err) {
-      console.error('Failed to fetch messages', err);
-    }
-  };
-
-  const sendMessage = async (e) => {
-    e.preventDefault();
-    if (!selectedUser || !message.trim()) {
-      alert('Please select a recipient and enter a message');
+  const sendMessage = async () => {
+    if (!recipientId || !message) {
+      alert('Recipient and message required');
       return;
     }
-    
     try {
-      const token = localStorage.getItem('token');
-      await axios.post('/api/messaging/send', { 
-        recipientId: selectedUser._id, 
-        content: message.trim()
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      setMessage('');
-      fetchMessages(selectedUser._id);
+      await axios.post('/messaging/send', { recipientId, content: message });
       alert('📤 Message sent securely!');
+      setMessage('');
+      setRecipientId('');
     } catch (err) {
-      console.error('Send message error:', err);
       alert('❌ ' + (err.response?.data?.error || 'Failed to send message'));
     }
   };
 
-  const selectUser = (selectedUser) => {
-    setSelectedUser(selectedUser);
+  const markAsRead = async (id) => {
+    try {
+      await axios.post(`/messaging/mark-read/${id}`);
+      fetchInbox();
+    } catch (err) {
+      console.error('Failed to mark message as read');
+    }
   };
 
   return (
     <div className="messaging-container">
       <div className="page-header">
         <h2>🔐 Secure Messaging</h2>
-        <button onClick={() => setCurrentView('dashboard')} className="back-button">
-          ← Back to Dashboard
-        </button>
+        <button onClick={() => setCurrentView('dashboard')} className="back-button">← Back</button>
       </div>
 
-      <div className="encryption-notice">
-        <span className="icon">🔒</span>
-        <div>
-          <strong>End-to-End Encrypted</strong>
-          <p>All messages are encrypted using RSA-AES hybrid encryption. Only you and the recipient can read them.</p>
-        </div>
-      </div>
-
-      <div className="messaging-layout">
-        {/* Contacts Panel */}
-        <div className="contacts-panel">
-          <div className="contacts-header">
-            <h3>💬 Contacts</h3>
-            <span className="contact-count">{users.length} users</span>
-          </div>
-          
-          <div className="contacts-list">
-            {users.length === 0 ? (
-              <div className="no-contacts">
-                <p>👥 No other users found</p>
-                <small>Register more users to start messaging</small>
-              </div>
-            ) : (
-              users.map((contact) => (
-                <div 
-                  key={contact._id}
-                  className={`contact-item ${selectedUser?._id === contact._id ? 'selected' : ''}`}
-                  onClick={() => selectUser(contact)}
-                >
-                  <div className="contact-avatar">
-                    {contact.username.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="contact-info">
-                    <h4>{contact.username}</h4>
-                    <p>{contact.email}</p>
-                    <small>👤 {contact.role}</small>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
+      <div className="messaging-grid">
+        <div className="send-message">
+          <h3>📨 Compose Message</h3>
+          <select value={recipientId} onChange={(e) => setRecipientId(e.target.value)} required>
+            <option value="">-- Select Recipient --</option>
+            {users.map(u => (
+              <option key={u._id} value={u._id}>{u.username}</option>
+            ))}
+          </select>
+          <textarea
+            rows="4"
+            placeholder="Write your message here..."
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+          />
+          <button onClick={sendMessage}>🚀 Send Secure Message</button>
         </div>
 
-        {/* Chat Panel */}
-        <div className="chat-panel">
-          {selectedUser ? (
-            <>
-              {/* Chat Header */}
-              <div className="chat-header">
-                <div className="chat-avatar">
-                  {selectedUser.username.charAt(0).toUpperCase()}
-                </div>
-                <div className="chat-info">
-                  <h3>{selectedUser.username}</h3>
-                  <p>🔐 End-to-end encrypted • {selectedUser.email}</p>
-                </div>
-              </div>
-
-              {/* Messages Container */}
-              <div className="messages-container">
-                {messages.length === 0 ? (
-                  <div className="no-messages">
-                    <div className="icon">💬</div>
-                    <p>No messages yet</p>
-                    <small>Start the conversation by sending a secure message</small>
-                  </div>
-                ) : (
-                  messages.map((msg) => (
-                    <div 
-                      key={msg._id} 
-                      className={`message ${msg.sender._id === user._id ? 'sent' : 'received'}`}
-                    >
-                      <div className="message-bubble">
-                        {msg.decrypted || msg.content || 'Encrypted message'}
-                      </div>
-                      <div className="message-time">
-                        {new Date(msg.createdAt).toLocaleString()}
-                      </div>
-                    </div>
-                  ))
+        <div className="inbox">
+          <h3>📥 Inbox</h3>
+          {messages.length === 0 ? (
+            <p>No messages</p>
+          ) : (
+            messages.map((msg) => (
+              <div key={msg._id} className={`msg-card ${msg.isRead ? 'read' : 'unread'}`}>
+                <p><strong>From:</strong> {msg.sender?.username}</p>
+                <p><strong>Received:</strong> {new Date(msg.createdAt).toLocaleString()}</p>
+                <p><strong>Decrypted:</strong> {msg.decrypted}</p>
+                {!msg.isRead && (
+                  <button onClick={() => markAsRead(msg._id)}>✅ Mark as Read</button>
                 )}
               </div>
-
-              {/* Message Input */}
-              <div className="message-input-container">
-                <form onSubmit={sendMessage} className="message-input-form">
-                  <textarea
-                    className="message-input"
-                    rows="1"
-                    placeholder={`Send a secure message to ${selectedUser.username}...`}
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        sendMessage(e);
-                      }
-                    }}
-                  />
-                  <button 
-                    type="submit" 
-                    className="send-button"
-                    disabled={!message.trim()}
-                  >
-                    🚀 Send
-                  </button>
-                </form>
-              </div>
-            </>
-          ) : (
-            <div className="no-chat-selected">
-              <div className="icon">💬</div>
-              <p>Select a contact to start messaging</p>
-              <small>Choose someone from the contacts list to begin a secure conversation</small>
-            </div>
+            ))
           )}
         </div>
       </div>

@@ -12,7 +12,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key';
 // Register new user
 router.post('/register', async (req, res) => {
   try {
-    const { username, email, password, role } = req.body;
+    const { username, email, password } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ 
@@ -47,8 +47,7 @@ console.log("TOTP otpauth_url:", totpSecret.otpauth_url);
       passwordHash: hashedPassword,
       totpSecret: totpSecret.base32,
       publicKey: keyPair.publicKey,
-      privateKeyEncrypted: JSON.stringify(encryptedPrivateKey),
-      role: role || 'user' // Default to 'user' if no role specified
+      privateKeyEncrypted: JSON.stringify(encryptedPrivateKey)
     });
 
     await user.save();
@@ -165,22 +164,5 @@ const authenticateToken = (req, res, next) => {
     next();
   });
 };
-
-// Get all users (for messaging contacts)
-router.get('/users', authenticateToken, async (req, res) => {
-  try {
-    const users = await User.find({}, 'username email role createdAt').sort({ username: 1 });
-    res.json({
-      message: 'Users fetched successfully',
-      users: users
-    });
-  } catch (error) {
-    console.error('❌ Failed to fetch users:', error);
-    res.status(500).json({ 
-      error: 'Failed to fetch users', 
-      details: error.message 
-    });
-  }
-});
 
 module.exports = { router, authenticateToken };
