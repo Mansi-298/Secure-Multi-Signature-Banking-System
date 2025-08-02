@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import './App.css';
 
@@ -26,9 +26,9 @@ function App() {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       fetchUserInfo();
     }
-  }, []);
+  }, [fetchUserInfo]);
 
-  const fetchUserInfo = async () => {
+  const fetchUserInfo = useCallback(async () => {
     try {
       const userInfo = JSON.parse(localStorage.getItem('user'));
       setUser(userInfo);
@@ -36,7 +36,7 @@ function App() {
     } catch (error) {
       logout();
     }
-  };
+  }, []);
 
   const logout = () => {
     localStorage.removeItem('token');

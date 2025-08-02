@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import './SecureMessaging.css';
 
@@ -11,16 +11,16 @@ const SecureMessaging = ({ user, setCurrentView }) => {
   useEffect(() => {
     fetchUsers();
     fetchInbox();
-  }, []);
+  }, [fetchUsers]);
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       const res = await axios.get('/auth/users');
       setUsers(res.data.users.filter(u => u._id !== user._id));
     } catch (err) {
       console.error('Failed to fetch users', err);
     }
-  };
+  }, [user]);
 
   const fetchInbox = async () => {
     try {
