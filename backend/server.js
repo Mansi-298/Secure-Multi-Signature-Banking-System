@@ -48,5 +48,11 @@ mongoose.connect(process.env.MONGO_URL || 'mongodb://localhost:27017/secure_bank
     console.error('❌ MongoDB connection error:', err);
   });
 
-// For Vercel, export the app instead of starting server
+// Start server locally, but also export for Vercel
+if (require.main === module) {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`✅ Backend server running on http://0.0.0.0:${PORT}`);
+  });
+}
+
 module.exports = app;
