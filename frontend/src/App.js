@@ -12,7 +12,9 @@ import ExecuteTransaction from './components/transactions/ExecuteTransaction';
 import AuditLogViewer from './components/audit/AuditLogViewer';
 
 
-axios.defaults.baseURL = 'http://localhost:5000/api';
+axios.defaults.baseURL = process.env.NODE_ENV === 'production' 
+  ? '/api' 
+  : 'http://localhost:5000/api';
 
 function App() {
   const [user, setUser] = useState(null);

@@ -43,19 +43,10 @@ app.get('/', (req, res) => {
 mongoose.connect(process.env.MONGO_URL || 'mongodb://localhost:27017/secure_banking')
   .then(() => {
     console.log('✅ MongoDB connected successfully');
-    
-    // Start server only after DB connects
-    app.listen(5000, '0.0.0.0', () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-    });
   })
   .catch((err) => {
     console.error('❌ MongoDB connection error:', err);
-    console.log('⚠️  Starting server without database connection...');
-    
-    // Start server even if DB fails (for development)
-    app.listen(5000, '0.0.0.0', () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-    });
-    
   });
+
+// For Vercel, export the app instead of starting server
+module.exports = app;
