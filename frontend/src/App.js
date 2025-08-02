@@ -20,14 +20,6 @@ function App() {
   const [user, setUser] = useState(null);
   const [currentView, setCurrentView] = useState('login');
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      fetchUserInfo();
-    }
-  }, [fetchUserInfo]);
-
   const fetchUserInfo = useCallback(async () => {
     try {
       const userInfo = JSON.parse(localStorage.getItem('user'));
@@ -37,6 +29,14 @@ function App() {
       logout();
     }
   }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      fetchUserInfo();
+    }
+  }, [fetchUserInfo]);
 
   const logout = () => {
     localStorage.removeItem('token');

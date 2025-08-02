@@ -8,11 +8,6 @@ const SecureMessaging = ({ user, setCurrentView }) => {
   const [users, setUsers] = useState([]);
   const [messages, setMessages] = useState([]);
 
-  useEffect(() => {
-    fetchUsers();
-    fetchInbox();
-  }, [fetchUsers]);
-
   const fetchUsers = useCallback(async () => {
     try {
       const res = await axios.get('/auth/users');
@@ -21,6 +16,11 @@ const SecureMessaging = ({ user, setCurrentView }) => {
       console.error('Failed to fetch users', err);
     }
   }, [user]);
+
+  useEffect(() => {
+    fetchUsers();
+    fetchInbox();
+  }, [fetchUsers]);
 
   const fetchInbox = async () => {
     try {
