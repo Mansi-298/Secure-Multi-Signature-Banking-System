@@ -56,66 +56,6 @@ A comprehensive banking system implementing advanced cryptographic security feat
 - MongoDB (local installation or MongoDB Atlas)
 - Gmail account with App Password for email notifications
 
-### 1. Clone and Setup
-
-```bash
-# Clone the repository
-git clone <repository-url>
-cd secure-banking-system
-
-# Install backend dependencies
-cd backend
-npm install
-
-# Install frontend dependencies
-cd ../frontend
-npm install
-```
-
-### 2. Environment Configuration
-
-Create a `.env` file in the `backend` directory:
-
-```env
-# Database Configuration
-MONGO_URL=mongodb://localhost:27017/secure_banking
-
-# Server Configuration
-PORT=5000
-JWT_SECRET=your_super_secret_jwt_key_here_make_it_long_and_complex
-
-# Email Configuration (Gmail SMTP)
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your-email@gmail.com
-SMTP_PASS=your-16-character-app-password
-SMTP_FROM="Secure Banking System" <noreply@securebank.com>
-
-# Frontend URL
-FRONTEND_URL=http://localhost:3000
-```
-
-### 3. Generate Gmail App Password
-
-1. Go to your Google Account settings
-2. Enable 2-Factor Authentication
-3. Generate an App Password for "Mail"
-4. Use the 16-character password in your `.env` file
-
-### 4. Start the Application
-
-**Backend Server:**
-```bash
-cd backend
-npm start
-```
-
-**Frontend Application:**
-```bash
-cd frontend
-npm start
-```
-
 The application will be available at:
 - Frontend: `http://localhost:3000`
 - Backend API: `http://localhost:5000`
@@ -209,34 +149,6 @@ npm test
 └── TESTING_GUIDE.md
 ```
 
-## 🌐 Deployment
-
-This application is configured for deployment on Replit with automatic environment setup.
-
-### Replit Deployment
-1. Fork/import the project to Replit
-2. Configure environment variables in Secrets
-3. Click the Run button to start the application
-4. Use the provided URL to access your deployed app
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
-
-## 📝 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🆘 Support
-
-For support and questions:
-- Check the [Testing Guide](TESTING_GUIDE.md) for detailed testing instructions
-- Review the audit logs for system monitoring
-- Ensure all environment variables are properly configured
 
 ## 🔮 Future Enhancements
 
@@ -247,6 +159,3 @@ For support and questions:
 - [ ] Blockchain integration for transaction immutability
 - [ ] Advanced reporting and analytics
 
----
-
-**Security Notice**: This system handles sensitive financial data. Ensure all security best practices are followed in production environments, including regular security audits, proper key management, and compliance with banking regulations.
